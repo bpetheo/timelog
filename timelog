@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# Name: Timelog
+#
+# Description: Mito time logger helper script
+# Creator: Petheő Bence <b.petheo@mito.hu>
+# Version: 0.5
+
+function usage {
+	echo "Usage: Show log from today --> $0"
+	echo "Usage: Show log from yesterday --> $0 yesterday"
+	echo "Usage: Show log from 2015-06-02 --> $0 2015-06-02"
+	echo "Usage: Show log from 3 days ago --> $0 3"
+	exit
+}
+
+if [ $# -gt 1 ]
+then
+	usage
+fi
+
+if [ $# -gt 0 ]
+then
+	if [[ "$1" =~ ^[0-9]+$ ]]
+	then
+		DATE=$(date -d now-$1days +%Y-%m-%d)
+	else
+		DATE=$(date -d $1 +%Y-%m-%d)
+	fi
+else
+	DATE=$(date +%Y-%m-%d)
+fi
+
+find ~ ! -readable -prune -o -iname '.git' -type d -exec sh -c '
+IFS=$'\n'
+underline=`tput smul`
+nounderline=`tput rmul`
+bold=`tput bold`
+normal=`tput sgr0`
+FIRST_REPO=1
+DATE=$1
+shift
+
+  for REPO; do
+    cd "$REPO/..";
+    HIST=`git log --reverse --committer $(git config user.email) --since "$DATE 00:00:00" --until "$DATE 23:59:59" --pretty=format:"%s" --no-merges  | sed "s/ #[[:graph:]]*//g"`;
+	if [ -n "$HIST" ]; then
+		if [ $FIRST_REPO -eq 1 ]; then
+			FIRST_REPO=0
+		else
+			echo
+		fi
+		REPO_NAME="$(echo ${PWD##*/} | tr "[:lower:]" "[:upper:]")"
+		echo "${bold}${underline}$REPO_NAME${normal}:\n"
+		for LOG in $HIST; do
+			echo "$LOG";
+		done
+	fi
+  done' sh $DATE {} +
