@@ -43,7 +43,7 @@ shift
 
   for REPO; do
     cd "$REPO/..";
-    HIST=`git log --reverse --committer $(git config user.email) --since "$DATE 00:00:00" --until "$DATE 23:59:59" --pretty=format:"%s" --no-merges  | sed "s/ #[[:graph:]]*//g"`;
+    HIST=`git log --all --reverse --committer $(git config user.email) --since "$DATE 00:00:00" --until "$DATE 23:59:59" --pretty=format:"%s" --no-merges  | sed "s/ #[[:graph:]]*//g"`;
 	if [ -n "$HIST" ]; then
 		if [ $FIRST_REPO -eq 1 ]; then
 			FIRST_REPO=0
